@@ -44,7 +44,7 @@ router.post('/upload', auth, upload.single('pdf'), async (req, res) => {
 
     // OpenAI Prompting - Simplified service layer
     const prompt = `
-      You are a expert teacher. Given the following text, generate 15-20 high-quality flashcards.
+      You are an expert teacher. Given the following text, generate 15-20 high-quality flashcards.
       Each card must have a "question" and "answer". Cover key concepts, definitions, and relationships.
       Return ONLY a JSON array of objects.
       
@@ -52,13 +52,19 @@ router.post('/upload', auth, upload.single('pdf'), async (req, res) => {
       [{"question": "What is X?", "answer": "X is Y"}]
 
       Text:
-      ${text.substring(0, 12000)} // Truncate to avoid token limits for very long PDFs
+      ${text.substring(0, 12000)}
     `;
 
     const response = await openai.chat.completions.create({
       model: isGroq ? "llama-3.3-70b-versatile" : "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
+      messages: [
+        { 
+          role: "system", 
+          content: "You are an expert teacher. Return ONLY a valid JSON object matching the requested format. No markdown, no thinking blocks." 
+        },
+        { role: "user", content: prompt }
+      ],
+      ...(isGroq ? {} : { response_format: { type: "json_object" } }),
     });
 
     const content = JSON.parse(response.choices[0].message.content);

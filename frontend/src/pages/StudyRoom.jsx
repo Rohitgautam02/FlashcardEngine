@@ -49,6 +49,24 @@ const StudyRoom = () => {
     }
   };
 
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (isFinished) return;
+      
+      if (e.key === '1') handleRate(1);
+      if (e.key === '2') handleRate(3);
+      if (e.key === '3') handleRate(5);
+      if (e.key === ' ' || e.key === 'Enter') {
+        const cardElement = document.getElementById('active-flashcard');
+        if (cardElement) cardElement.click();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [currentIndex, isFinished, cards]);
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="animate-spin text-primary" size={48} />

@@ -58,7 +58,7 @@ const LandingPage = () => {
               to="/login" 
               className="px-8 py-4 rounded-2xl font-bold text-lg border border-white/10 hover:bg-white/5 transition-all"
             >
-              View Demo
+              Sign In
             </Link>
           </motion.div>
         </div>

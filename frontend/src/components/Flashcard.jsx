@@ -6,6 +6,7 @@ const Flashcard = ({ question, answer }) => {
 
   return (
     <div 
+      id="active-flashcard"
       className="w-full max-w-2xl h-[400px] perspective-1000 cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
     >

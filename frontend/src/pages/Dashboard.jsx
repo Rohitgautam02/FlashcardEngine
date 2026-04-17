@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { Plus, BookOpen, Clock, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, BookOpen, Clock, Trash2, Loader2, AlertCircle, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import UploadModal from '../components/UploadModal';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const Dashboard = () => {
   const [decks, setDecks] = useState([]);
@@ -11,6 +12,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const { user } = useAuth();
+
+  const chartData = decks.map(d => ({
+    name: d.title.substring(0, 10) + '...',
+    cards: d.cardCount,
+    due: d.dueCount
+  }));
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -55,47 +62,78 @@ const Dashboard = () => {
       {/* Header & Stats */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-4xl font-extrabold mb-2">My Decks</h1>
-          <p className="text-textMain/70">Welcome back! Here's your study overview.</p>
+          <h1 className="text-4xl font-extrabold mb-2 font-outfit">Welcome back, <span className="text-primary">{user.name}</span></h1>
+          <p className="text-textMain/70 font-medium">Ready for another productive study session?</p>
         </div>
         <button 
           onClick={() => setIsUploadOpen(true)}
-          className="flex items-center gap-2 bg-primary text-background px-6 py-3 rounded-2xl font-bold hover:scale-105 transition-transform"
+          className="flex items-center gap-2 bg-primary text-background px-6 py-3 rounded-2xl font-bold hover:scale-105 transition-transform shadow-[0_0_20px_rgba(102,252,241,0.2)]"
         >
           <Plus size={20} />
           Create New Deck
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="glass-card flex items-center gap-4">
-          <div className="bg-primary/20 p-3 rounded-xl text-primary">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div className="glass-card flex items-center gap-4 border-primary/20 bg-primary/5">
+          <div className="bg-primary p-3 rounded-xl text-background shrink-0">
             <Clock size={24} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white">{stats.dueCount}</div>
-            <div className="text-sm text-textMain/60 font-medium">Cards Due Today</div>
-          </div>
-        </div>
-        <div className="glass-card flex items-center gap-4 border-primary/20 bg-primary/5">
-          <div className="bg-primary p-3 rounded-xl text-background">
-            <AlertCircle size={24} />
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-white">{stats.dueCount > 0 ? 'Urgent' : 'All Clear'}</div>
-            <div className="text-sm text-textMain/60 font-medium">Study Status</div>
+            <div className="text-3xl font-bold text-white leading-tight">{stats.dueCount}</div>
+            <div className="text-xs text-textMain/60 font-bold uppercase tracking-wider">Due Today</div>
           </div>
         </div>
         <div className="glass-card flex items-center gap-4">
-          <div className="bg-white/10 p-3 rounded-xl text-white">
+          <div className="bg-white/10 p-3 rounded-xl text-white shrink-0">
             <BookOpen size={24} />
           </div>
           <div>
-            <div className="text-3xl font-bold text-white">{stats.totalCards}</div>
-            <div className="text-sm text-textMain/60 font-medium">Total Flashcards</div>
+            <div className="text-3xl font-bold text-white leading-tight">{stats.totalCards}</div>
+            <div className="text-xs text-textMain/60 font-bold uppercase tracking-wider">Total Cards</div>
+          </div>
+        </div>
+        <div className="glass-card flex items-center gap-4">
+          <div className="bg-secondary/20 p-3 rounded-xl text-secondary shrink-0">
+            <Award size={24} />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white leading-tight">{stats.masteredCount}</div>
+            <div className="text-xs text-textMain/60 font-bold uppercase tracking-wider">Mastered</div>
+          </div>
+        </div>
+        <div className="glass-card flex items-center gap-4">
+          <div className="bg-white/10 p-3 rounded-xl text-white shrink-0">
+            <Award size={24} className="opacity-40" />
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-white leading-tight">{decks.length}</div>
+            <div className="text-xs text-textMain/60 font-bold uppercase tracking-wider">Active Decks</div>
           </div>
         </div>
       </div>
+
+      {/* Progress Chart */}
+      {decks.length > 0 && (
+        <div className="glass-card mb-12 h-[350px]">
+          <h3 className="text-xl font-bold mb-6 font-outfit">Study Progress Overview</h3>
+          <ResponsiveContainer width="100%" height="80%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#C5C6C7', fontSize: 12}} />
+              <YAxis hide />
+              <Tooltip 
+                cursor={{fill: 'rgba(255,255,255,0.05)'}} 
+                contentStyle={{backgroundColor: '#1F2833', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px'}}
+              />
+              <Bar dataKey="cards" radius={[6, 6, 0, 0]} barSize={40}>
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.due > 0 ? '#66FCF1' : '#45A29E'} fillOpacity={0.8} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* Deck Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

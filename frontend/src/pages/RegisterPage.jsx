@@ -5,6 +5,7 @@ import { Brain, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +23,7 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      await register(email, password);
+      await register(email, password, name);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create account');
@@ -44,6 +45,20 @@ const RegisterPage = () => {
 
         <div className="glass-card p-8 animate-in slide-in-from-bottom-8 duration-1000">
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2 opacity-70">Full Name</label>
+              <div className="relative">
+                <Brain className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="John Doe"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 focus:border-primary/50 outline-none transition-all font-medium"
+                />
+              </div>
+            </div>
             <div>
               <label className="block text-sm font-semibold mb-2 opacity-70">Email Address</label>
               <div className="relative">

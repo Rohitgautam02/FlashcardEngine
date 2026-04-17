@@ -5,11 +5,10 @@ A premium study assistant that transforms complex PDF notes into interactive fla
 Built for the CUEMATH Build Challenge.
 
 ## 🚀 Key Features
-- **AI-Driven Generation**: Turns any text-based PDF into a high-quality study deck in seconds.
-- **Scientific Study Mode**: Implements the SM-2 algorithm to optimize memory retention.
-- **Premium Design**: Dark-mode glassy interface built with Tailwind CSS and Framer Motion.
-- **Dashboard Analytics**: Track mastery, study streaks, and "Cards Due Today" counts.
-- **Secure Authentication**: JWT-based user sessions for personal deck management.
+- **Smart Logic**: Implements the scientific **SM-2 Algorithm** for review scheduling.
+- **AI-Powered**: Supports **OpenAI (GPT-4o)** and **Groq (Llama 3)** for instant deck generation.
+- **Premium UX**: Keyboard shortcuts (1, 2, 3, Space), 3D flip cards, and Recharts analytics.
+- **User Privacy**: Fully isolated user accounts with name-based personalization.
 
 ## 🛠 Tech Stack
 - **Frontend**: React (Vite), Tailwind CSS, Framer Motion, Recharts, Lucide React.

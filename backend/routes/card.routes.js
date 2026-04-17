@@ -75,9 +75,19 @@ router.get('/deck/:deckId/due', auth, async (req, res) => {
 // Summary stats for dashboard
 router.get('/stats/summary', auth, async (req, res) => {
   try {
-    const totalCards = await Card.countDocuments({});
-    const dueCount = await Card.countDocuments({ nextReviewDate: { $lte: new Date() } });
-    const masteredCount = await Card.countDocuments({ repetitions: { $gt: 5 } }); // Just a metric
+    const Deck = require('../models/Deck');
+    const userDecks = await Deck.find({ user: req.user._id }).select('_id');
+    const deckIds = userDecks.map(d => d._id);
+
+    const totalCards = await Card.countDocuments({ deck: { $in: deckIds } });
+    const dueCount = await Card.countDocuments({ 
+      deck: { $in: deckIds }, 
+      nextReviewDate: { $lte: new Date() } 
+    });
+    const masteredCount = await Card.countDocuments({ 
+      deck: { $in: deckIds }, 
+      repetitions: { $gt: 5 } 
+    });
 
     res.send({ totalCards, dueCount, masteredCount });
   } catch (err) {

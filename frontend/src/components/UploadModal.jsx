@@ -31,8 +31,12 @@ const UploadModal = ({ onClose, onSuccess }) => {
     try {
       setStatus('generating');
       setError(null);
+      const token = localStorage.getItem('token');
       await axios.post(`${API_URL}/decks/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
       });
       setStatus('success');
       setTimeout(() => onSuccess(), 1500);

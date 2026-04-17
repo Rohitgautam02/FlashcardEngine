@@ -24,7 +24,7 @@ const Navbar = () => {
               <div className="flex items-center gap-3 pl-4 border-l border-white/10">
                 <div className="flex items-center gap-2 text-sm text-white/70">
                   <UserIcon size={16} />
-                  <span>{user.email.split('@')[0]}</span>
+                  <span>{user.name}</span>
                 </div>
                 <button 
                   onClick={() => { logout(); navigate('/'); }}
