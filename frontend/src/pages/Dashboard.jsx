@@ -221,12 +221,12 @@ const Dashboard = () => {
               <div className="mb-6">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2 text-textMain/40">
                   <span>Mastery Progress</span>
-                  <span>{Math.round(((deck.cardCount - deck.dueCount) / deck.cardCount) * 100)}%</span>
+                  <span>{Math.round(deck.cardCount > 0 ? ((deck.cardCount - deck.dueCount) / deck.cardCount) * 100 : 0)}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gradient-to-r from-secondary to-primary transition-all duration-1000" 
-                    style={{ width: `${((deck.cardCount - deck.dueCount) / deck.cardCount) * 100}%` }}
+                    style={{ width: `${deck.cardCount > 0 ? ((deck.cardCount - deck.dueCount) / deck.cardCount) * 100 : 0}%` }}
                   />
                 </div>
               </div>

@@ -11,7 +11,6 @@ const StudyRoom = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
-  const [sessionStats, setSessionStats] = useState(null);
   const [feedback, setFeedback] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
