@@ -14,6 +14,11 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    enum: ['Definition', 'Concept', 'Example', 'Relationship', 'Edge Case'],
+    default: 'Concept',
+  },
   // SM-2 Algorithm Data
   easeFactor: {
     type: Number,

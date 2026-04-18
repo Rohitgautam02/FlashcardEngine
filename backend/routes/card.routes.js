@@ -89,7 +89,29 @@ router.get('/stats/summary', auth, async (req, res) => {
       repetitions: { $gt: 5 } 
     });
 
-    res.send({ totalCards, dueCount, masteredCount });
+    // 7-day forecast
+    const forecast = [];
+    for (let i = 0; i < 7; i++) {
+      const start = new Date();
+      start.setDate(start.getDate() + i);
+      start.setHours(0,0,0,0);
+      
+      const end = new Date();
+      end.setDate(end.getDate() + i + 1);
+      end.setHours(0,0,0,0);
+
+      const count = await Card.countDocuments({
+        deck: { $in: deckIds },
+        nextReviewDate: { $gt: start, $lt: end }
+      });
+      
+      forecast.push({ 
+        day: i === 0 ? 'Today' : start.toLocaleDateString('en-US', { weekday: 'short' }), 
+        count: i === 0 ? dueCount : count 
+      });
+    }
+
+    res.send({ totalCards, dueCount, masteredCount, forecast });
   } catch (err) {
     res.status(500).send(err);
   }

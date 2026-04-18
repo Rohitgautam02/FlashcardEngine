@@ -58,4 +58,5 @@ Built for the CUEMATH Build Challenge.
 
 ---
 
-Built by [Your Name] | April 2026
+Built by [Rohit Gautam](https://github.com/Rohitgautam02)
+ | April 2026

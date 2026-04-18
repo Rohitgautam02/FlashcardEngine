@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, Loader2, CheckCircle, RotateCcw } from 'lucide-react';
@@ -11,6 +11,8 @@ const StudyRoom = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
+  const [sessionStats, setSessionStats] = useState(null);
+  const [feedback, setFeedback] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -20,10 +22,10 @@ const StudyRoom = () => {
         // Try fetching due cards first, if none, fetch all
         const dueRes = await axios.get(`${API_URL}/cards/deck/${deckId}/due`);
         if (dueRes.data.length > 0) {
-          setCards(dueRes.data);
+          setCards(dueRes.data.map(c => ({...c, isNew: false})));
         } else {
           const allRes = await axios.get(`${API_URL}/cards/deck/${deckId}`);
-          setCards(allRes.data);
+          setCards(allRes.data.map(c => ({...c, isNew: true})));
         }
       } catch (err) {
         console.error('Failed to fetch cards', err);
@@ -34,20 +36,26 @@ const StudyRoom = () => {
     fetchCards();
   }, [deckId]);
 
-  const handleRate = async (quality) => {
+  const handleRate = useCallback(async (quality) => {
+    if (!cards[currentIndex]) return;
     const cardId = cards[currentIndex]._id;
     try {
-      await axios.post(`${API_URL}/cards/${cardId}/study`, { quality });
+      const res = await axios.post(`${API_URL}/cards/${cardId}/study`, { quality });
+      const updatedCard = res.data;
+      
+      // Show SM-2 Feedback
+      setFeedback(`Next review in ${updatedCard.interval} days`);
+      setTimeout(() => setFeedback(null), 1500);
       
       if (currentIndex < cards.length - 1) {
-        setCurrentIndex(currentIndex + 1);
+        setCurrentIndex(v => v + 1);
       } else {
         setIsFinished(true);
       }
     } catch (err) {
       console.error('Failed to update card', err);
     }
-  };
+  }, [currentIndex, cards, isFinished]);
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -65,7 +73,24 @@ const StudyRoom = () => {
     
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [currentIndex, isFinished, cards]);
+  }, [handleRate, isFinished]);
+
+  // Delight: Confetti effect on finish
+  useEffect(() => {
+    if (isFinished) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+      script.onload = () => {
+        window.confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#66FCF1', '#45A29E', '#FFFFFF']
+        });
+      };
+      document.body.appendChild(script);
+    }
+  }, [isFinished]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -80,12 +105,13 @@ const StudyRoom = () => {
     </div>
   );
 
+
   if (isFinished) return (
     <div className="min-h-screen pt-24 px-6 flex flex-col items-center justify-center text-center">
       <div className="bg-primary/20 p-6 rounded-full text-primary mb-8 animate-bounce">
         <CheckCircle size={64} />
       </div>
-      <h2 className="text-4xl font-extrabold mb-4">Session Complete!</h2>
+      <h2 className="text-4xl font-extrabold mb-4 animate-in zoom-in duration-500">Session Complete!</h2>
       <p className="text-xl text-textMain/60 mb-10 max-w-md">Excellent work! You've reviewed all cards scheduled for today.</p>
       <div className="flex gap-4">
         <button 
@@ -127,11 +153,20 @@ const StudyRoom = () => {
         />
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center gap-12">
+      <div className="flex-1 flex flex-col items-center justify-center gap-12 relative">
+        {/* Magic Feedback Toast */}
+        {feedback && (
+          <div className="absolute top-0 bg-primary/20 text-primary border border-primary/30 px-6 py-2 rounded-full font-bold text-sm animate-in fade-in slide-in-from-bottom-4 duration-300 z-50 backdrop-blur-md">
+            ✨ {feedback}
+          </div>
+        )}
+
         <Flashcard 
           key={cards[currentIndex]._id}
           question={cards[currentIndex].question}
           answer={cards[currentIndex].answer}
+          category={cards[currentIndex].category}
+          repetitions={cards[currentIndex].repetitions}
         />
 
         <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
@@ -157,6 +192,13 @@ const StudyRoom = () => {
             <span className="font-bold text-primary">Easy</span>
           </button>
         </div>
+        
+        <p className="text-center text-textMain/30 text-xs font-medium mt-6">
+          Keyboard: <kbd className="bg-white/10 px-2 py-0.5 rounded">1</kbd> Hard &nbsp;
+          <kbd className="bg-white/10 px-2 py-0.5 rounded">2</kbd> Medium &nbsp;
+          <kbd className="bg-white/10 px-2 py-0.5 rounded">3</kbd> Easy &nbsp;
+          <kbd className="bg-white/10 px-2 py-0.5 rounded">Space</kbd> Flip
+        </p>
       </div>
     </div>
   );

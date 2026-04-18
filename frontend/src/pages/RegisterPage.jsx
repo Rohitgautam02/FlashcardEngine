@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Brain, Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import { Brain, Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -48,7 +48,7 @@ const RegisterPage = () => {
             <div>
               <label className="block text-sm font-semibold mb-2 opacity-70">Full Name</label>
               <div className="relative">
-                <Brain className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
                 <input 
                   type="text" 
                   value={name}

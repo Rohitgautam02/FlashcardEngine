@@ -44,12 +44,22 @@ router.post('/upload', auth, upload.single('pdf'), async (req, res) => {
 
     // OpenAI Prompting - Simplified service layer
     const prompt = `
-      You are an expert teacher. Given the following text, generate 15-20 high-quality flashcards.
-      Each card must have a "question" and "answer". Cover key concepts, definitions, and relationships.
-      Return ONLY a JSON array of objects.
+      You are an expert teacher. Your goal is to transform the provided text into a comprehensive, practice-ready deck of flashcards that ensures deep conceptual mastery.
+      
+      Requirements:
+      1. COMPREHENSIVE COVERAGE: Cover key concepts, relationships, edge cases, and worked examples.
+      2. CATEGORIZATION: Every card MUST be assigned exactly one of these categories:
+         - "Definition": Core terminology.
+         - "Concept": Deep theoretical understanding.
+         - "Relationship": How different ideas connect.
+         - "Example": Practical, worked-out application.
+         - "Edge Case": Tricky, non-obvious specific scenarios.
+      3. QUANTITY: Generate 15-20 high-quality cards.
+      
+      Return ONLY a JSON array of objects with "question", "answer", and "category" keys.
       
       Example:
-      [{"question": "What is X?", "answer": "X is Y"}]
+      [{"question": "How do quadratic equations relate to parabolic curves?", "answer": "The solutions (roots) denote the x-intercepts of the parabola.", "category": "Relationship"}]
 
       Text:
       ${text.substring(0, 12000)}
@@ -67,8 +77,11 @@ router.post('/upload', auth, upload.single('pdf'), async (req, res) => {
       ...(isGroq ? {} : { response_format: { type: "json_object" } }),
     });
 
-    const content = JSON.parse(response.choices[0].message.content);
-    const cardsData = content.cards || content.flashcards || Object.values(content)[0]; // robust parsing
+    let responseText = response.choices[0].message.content;
+    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    const content = JSON.parse(responseText);
+    const cardsData = content.cards || content.flashcards || (Array.isArray(content) ? content : Object.values(content)[0]); 
 
     if (!Array.isArray(cardsData)) {
       throw new Error("Invalid response format from AI");
@@ -80,6 +93,7 @@ router.post('/upload', auth, upload.single('pdf'), async (req, res) => {
       deck: deck._id,
       question: c.question,
       answer: c.answer,
+      category: c.category || 'Concept',
     }));
 
     await Card.insertMany(cards);
